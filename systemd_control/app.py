@@ -1,7 +1,8 @@
 import re
 import subprocess
+import sys
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
@@ -12,6 +13,13 @@ LIST_REGEX = r"^\s*(?!UNIT)(?P<filename>[\w.@:\\-]+)\.service\s*(?P<load>\w+) (?
 DETAIL_REGEX = r"^\s*(?P<name>.*?): (?P<value>.*)$"
 
 
+try:
+    from . import secret
+except ImportError:
+    print("No secret.py found. Please create it using sample.secret.py as a template.")
+    sys.exit(1)
+
+
 @app.route("/")
 def index():
     return "Welcome to the Systemd API"
@@ -19,6 +27,10 @@ def index():
 
 @app.route("/list")
 def list():
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or auth_header != f"Bearer {secret.TOKEN}":
+        return "Unauthorized", 401
+
     output = subprocess.run(["systemctl", "list-units", "--type", "service"], stdout=subprocess.PIPE, text=True)
 
     result = []
@@ -34,6 +46,10 @@ def list():
 
 @app.route("/<int:service_id>")
 def detail(service_id: int):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or auth_header != f"Bearer {secret.TOKEN}":
+        return "Unauthorized", 401
+
     output = subprocess.run(["systemctl", "list-units", "--type", "service"], stdout=subprocess.PIPE, text=True)
 
     result = []
@@ -62,6 +78,10 @@ def detail(service_id: int):
 @app.route("/<int:service_id>/logs", defaults={"line_count": 10})
 @app.route("/<int:service_id>/logs/<int:line_count>")
 def logs(service_id: int, line_count: int):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or auth_header != f"Bearer {secret.TOKEN}":
+        return "Unauthorized", 401
+
     output = subprocess.run(["systemctl", "list-units", "--type", "service"], stdout=subprocess.PIPE, text=True)
 
     result = []
@@ -79,6 +99,10 @@ def logs(service_id: int, line_count: int):
 
 @app.route("/<int:service_id>/start", methods=["POST"])
 def start(service_id: int):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or auth_header != f"Bearer {secret.TOKEN}":
+        return "Unauthorized", 401
+
     output = subprocess.run(["systemctl", "list-units", "--type", "service"], stdout=subprocess.PIPE, text=True)
 
     result = []
@@ -96,6 +120,10 @@ def start(service_id: int):
 
 @app.route("/<int:service_id>/stop", methods=["POST"])
 def stop(service_id: int):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or auth_header != f"Bearer {secret.TOKEN}":
+        return "Unauthorized", 401
+
     output = subprocess.run(["systemctl", "list-units", "--type", "service"], stdout=subprocess.PIPE, text=True)
 
     result = []
@@ -113,6 +141,10 @@ def stop(service_id: int):
 
 @app.route("/<int:service_id>/restart", methods=["POST"])
 def restart(service_id: int):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or auth_header != f"Bearer {secret.TOKEN}":
+        return "Unauthorized", 401
+
     output = subprocess.run(["systemctl", "list-units", "--type", "service"], stdout=subprocess.PIPE, text=True)
 
     result = []
