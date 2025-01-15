@@ -1,0 +1,13 @@
+[Unit]
+Description=Systemd Control
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/krishnans2006/systemd-control/systemd_control
+ExecStart=/home/krishnans2006/.local/bin/poetry run python -m flask run --port 5333
+Restart=on-failure
+RestartSec=60
+
+[Install]
+WantedBy=default.target
